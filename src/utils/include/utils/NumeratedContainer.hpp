@@ -27,6 +27,7 @@
 #include <cassert>
 #include <set>
 #include <unordered_map>
+#include <cstddef>
 
 namespace Utils {
 

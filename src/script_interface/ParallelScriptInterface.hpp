@@ -23,6 +23,7 @@
 #define SCRIPT_INTERFACE_PARALLEL_SCRIPT_INTERFACE_HPP
 
 #include <utility>
+#include <limits>
 
 #include "MpiCallbacks.hpp"
 #include "ScriptInterface.hpp"
