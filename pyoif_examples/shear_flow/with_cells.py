@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import tqdm
 
 # System constants
-BOX_L = 16.0
+BOX_L = 60.0
 TIME_STEP = 0.1
 
 # fluid
@@ -33,12 +33,12 @@ system.cell_system.skin = 0.2
 #                         check_orientation=False, system=system, ks=0.02, kb=0.016, kal=0.02,
 #                         kag=0.9, kv=0.5, resize=[2.0, 2.0, 2.0])
 # creating the template for RBCs
-type = oif.OifCellType(nodes_file="input/rbc1002nodes.dat", triangles_file="input/rbc1002triangles.dat",
-                        check_orientation=False, system=system, ks=0.02, kb=0.016, kal=0.02,
-                        kag=0.9, kv=0.5, resize=[5.0, 5.0, 5.0])
+type = oif.OifCellType(nodes_file="input/rbc2562nodes.dat", triangles_file="input/rbc2562triangles.dat",
+                        check_orientation=True, system=system, ks=0.02, kb=0.016, kal=0.02,
+                        kag=0.9, kv=0.5, resize=[16.0, 16.0, 16.0])
 
 # creating the RBCs
-cell = oif.OifCell(cell_type=type, particle_type=0, origin=[8.0, 8.0, 8.0], rotate=[np.pi/2, 0.0, 0.0])
+cell = oif.OifCell(cell_type=type, particle_type=0, origin=[30.0, 30.0, 30.0], rotate=[0.0, 0.0, 0.0])
 cell.output_vtk_pos_folded(file_name="output/sim_with_cells/cell_0.vtk")
 
 suggested_gamma = cell.suggest_LBgamma(VISCOSITY, DENSITY)
@@ -47,7 +47,7 @@ print("suggested gamma is: ", str(suggested_gamma))
 lb_params = {'agrid': AGRID, 'dens': DENSITY, 'visc': VISCOSITY, 'tau': system.time_step, 'ext_force_density': FORCE_DENSITY}
 lbf = espressomd.lb.LBFluid(**lb_params)
 system.actors.add(lbf)
-system.thermostat.set_lb(LB_fluid=lbf, gamma=suggested_gamma/1.3)
+system.thermostat.set_lb(LB_fluid=lbf, gamma=suggested_gamma)
 
 FLOW_VEL = 0.1
 top_wall = espressomd.shapes.Wall(normal=[1, 0, 0], dist=WALL_OFFSET)
@@ -62,11 +62,12 @@ system.lbboundaries.add(bottom_boundary)
 print("Boundaries created.")
 
 # main integration loop
+steps = 50
 maxCycle = 200
 for i in range(1, maxCycle):
-    system.integrator.run(steps=100)
+    system.integrator.run(steps=steps)
     cell.output_vtk_pos_folded(file_name="output/sim_with_cells/cell_" + str(i) + ".vtk")
-    print("time: ", str(i*system.time_step*100))
+    print("time: ", str(i*system.time_step*steps))
 print("Simulation completed.")
 
 print("shape is: " + str(lbf.shape[0]) + " y? " + str(lbf.shape[1]) + " z? " + str(lbf.shape[2]))

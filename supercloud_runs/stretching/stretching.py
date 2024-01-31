@@ -30,12 +30,12 @@ else:
     simNo = sys.argv[2]
 
 # GEOMETRY
-boxX = 30.0
-boxY = 10.0
-boxZ = 20.0
+boxX = 60.0
+boxY = 20.0
+boxZ = 40.0
 
 # CELL
-stretch = 3.91
+stretch = 16.0
 noNodes = 374
 originX = boxX/2
 originY = boxY/2

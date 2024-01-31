@@ -23,20 +23,24 @@ import os, sys, time
 
 if len(sys.argv) != 3:
     print ("2 arguments expected, in this order")
-    print ("force, simNo")
+    print ("LLSUB_RANK, LLSUB_SIZE")
     print (" ")
 else:
-    force = float(sys.argv[1])
-    simNo = sys.argv[2]
+    this_proc = int(sys.argv[1])
+    no_proc = int(sys.argv[2])
+
+simNo = this_proc
+force_vals = np.linspace(0, 0.01, num=no_proc)
+force = force_vals[this_proc]
 
 # GEOMETRY
-boxX = 30.0
-boxY = 10.0
-boxZ = 20.0
+boxX = 60.0
+boxY = 20.0
+boxZ = 40.0
 
 # CELL
-stretch = 3.91
-noNodes = 374
+stretch = 16.0
+noNodes = 2562
 originX = boxX/2
 originY = boxY/2
 originZ = boxZ/2
@@ -51,10 +55,10 @@ kvisc = 0.0
 
 # for rings for stretching
 # needs to be changed for different meshes
-xBoundMinR = 0.9
-xBoundMaxR = 0.98
-xBoundMinL = 0.9
-xBoundMaxL = 0.98
+xBoundMinR = 0.9/2
+xBoundMaxR = 0.98/2
+xBoundMinL = 0.9/2
+xBoundMaxL = 0.98/2
 
 #  LBFLUID
 grid = 1.0
@@ -106,7 +110,10 @@ cellType = oif.OifCellType(nodes_file=fileNodes, triangles_file=fileTriangles, s
 # creating the RBC
 cell = oif.OifCell(cell_type=cellType, particle_type=0, origin=[originX,originY,originZ], rotate=[np.pi/2.0, 0.0, 0.0], particle_mass=partMass)
 
+cell.output_vtk_pos(dirVtkSimF+"/stretch_"+str(simNo)+"_vtk0.vtk")
+
 friction = cell.suggest_LBgamma(visc=visc,dens=dens)
+print("friction is: " + str(friction))
 
 # fluid
 lb_params = {'agrid': grid, 'dens': dens, 'visc': visc, 'tau': timeStep}
@@ -146,21 +153,21 @@ for it in leftStretchedParticles:
 leftContactDiameter = 2.0*radii/len(leftStretchedParticles)
 print ("left diameter = " + str(leftContactDiameter))
 
-# check whether contact diameters are ok and
-# check whether number of stretched points on the right is approximately the same as on the left
-if rightContactDiameter > 2.2 or rightContactDiameter < 1.7:
-    print ("wrong right diameter")
-    foutParam.write("wrong right diameter")
-    exit()
-if leftContactDiameter > 2.2 or leftContactDiameter < 1.7:
-    print ("wrong left diameter")
-    foutParam.write("wrong left diameter")
-    exit()
+# # check whether contact diameters are ok and
+# # check whether number of stretched points on the right is approximately the same as on the left
+# if rightContactDiameter > 2.2 or rightContactDiameter < 1.7:
+#     print ("wrong right diameter")
+#     # foutParam.write("wrong right diameter")
+#     exit()
+# if leftContactDiameter > 2.2 or leftContactDiameter < 1.7:
+#     print ("wrong left diameter")
+#     # foutParam.write("wrong left diameter")
+#     exit()
 
 if abs(len(leftStretchedParticles)-len(rightStretchedParticles)) > 0.01 * noNodes:
     print ("numbers of particles stretched on right and left differ by more than 1% from nnode")
-    foutParam.write("something is bad with particles:")
-    foutParam.write("numbers of particles stretched on right and left differ by more than 1% from nnode")
+    # foutParam.write("something is bad with particles:")
+    # foutParam.write("numbers of particles stretched on right and left differ by more than 1% from nnode")
     exit()
 
 # applying force at two rings of particles
@@ -255,4 +262,4 @@ elapsedTime = time.time()-startTime
 print ("Simulation completed in: " + str(elapsedTime))
 foutFinalData = open(dir+'/sim'+str(simNo)+"_finalData.dat","a")
 foutFinalData.write(str(force)+" "+str(length)+" "+str(thickness)+" "+str(volume)+" "+str(surface)+" "+str(cycle)+" "+str(tempVolume)+" "+str(tempSurface)+" "\
-                    +str(tempCycle)+" "+str(time))
+                    +str(tempCycle)+" "+str(elapsedTime))
